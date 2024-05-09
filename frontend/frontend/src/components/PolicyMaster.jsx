@@ -4,8 +4,19 @@ import './style.css'
 import axios from 'axios';
 import {  useEffect } from 'react';
 import { Link } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const PolicyMaster = () =>{
+    const [isGreater,setisGreater] = useState(false);
+    const [dupPolicy,setdupPolicy] = useState(false);
+    const[pn,setpn] = useState(false);
+    const[sto,setsto] = useState (false);
+    const[pwa,setpwa] = useState (false);
+    const[pwdu,setpwdu] = useState (false);
+    const[pwno,setpwno] = useState (false);
+    const [FillAll,setFillAll] = useState(false);
+    const [Required,setRequired] = useState(false);
     const [AlertMessage1,setAlertMessage1] = useState('');
     const [AlertState1,setAlertState1] = useState(false);
     const [AlertMessage2,setAlertMessage2] = useState('');
@@ -22,7 +33,7 @@ const PolicyMaster = () =>{
     const [LimitPolicyName,setLimitPolicyName] = useState(false);
     const [isValid,setisValid] = useState(false);
     const [CITPM_FailAttempt,setCITPM_FailAttempt] = useState('');
-    const [CITPM_PwdChangeDuration,setCITPM_PwdChangeDuration] = useState();
+    const [CITPM_PwdChangeDuration,setCITPM_PwdChangeDuration] = useState('');
     const [CITPM_PwdNotificationDuration,setCITPM_PwdNotificationDuration] = useState('');
     const [CITPM_SessionTimeOut,setCITPM_SessionTimeOut] = useState('');
     const [CITPM_PwdNeverExpiry, setCITPM_PwdNeverExpiry] = useState(0);
@@ -31,15 +42,16 @@ const PolicyMaster = () =>{
       };
 
       React.useEffect(() => {
-        if (SuccessMessage) {
+        if (SuccessMessage || FillAll) {
           const timeoutId = setTimeout(() => {
             setSuccessMessage(false);
+            setFillAll(false)
           }, 3000); // Hide heading after 3 seconds
       
           // Clean up timeout on component unmount
           return () => clearTimeout(timeoutId);
         }
-      }, [SuccessMessage]);
+      }, [SuccessMessage,FillAll]);
     
     const [CITPM_CreatedDateTime, setCITPM_CreatedDateTime] = useState(new Date());
    // const formattedDateTime = CITPM_CreatedDateTime.toLocaleString();
@@ -54,97 +66,212 @@ const PolicyMaster = () =>{
       const formattedDateTime = `${CITPM_CreatedDateTime.getFullYear()}-${padZero(CITPM_CreatedDateTime.getMonth() + 1)}-${padZero(CITPM_CreatedDateTime.getDate())} ${padZero(CITPM_CreatedDateTime.getHours())}:${padZero(CITPM_CreatedDateTime.getMinutes())}:${padZero(CITPM_CreatedDateTime.getSeconds())}`;
 
 
-      const SaveClick = async(e) => {
-            if(AlertState1 || AlertState2 || AlertState3 || AlertState4 || AlertState5 || isValid || LimitPolicyName){
-            // console.log("if",AlertState)    
-            }else{
+      const logAction = async (action, isError = false) => {
+        console.log(`${isError ? '[ERROR] ' : ''}${action}`);
+        try {
+          const response = await fetch('http://localhost:4000/api/log', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ module: "GroupMaster:", action, userCode: "", isError }),
+          });
+    
+          if (!response.ok) {
+            throw new Error('Failed to log action');
+          }
+        } catch (error) {
+          console.error('Error logging action:', error);
+        }
+      };
+
+    const SaveClick = async(e) => {
+
+        if(isValid||isGreater||AlertState1||AlertState2||AlertState3||AlertState4||AlertState5||LimitPolicyName){
+
+        }else{
+            if(CITPM_PwdNeverExpiry==1){
                 if(CITPM_PolicyName=="" || CITPM_SessionTimeOut == "" || CITPM_FailAttempt == ""){
-                    alert("Please fill all the required fields")
+                    // alert("Please fill all the required fields")
+                    if(CITPM_PolicyName=="" ){
+                        setpn(true)
+                    }
+                    if(CITPM_SessionTimeOut == ""){
+                        setsto(true)
+                    }
+                     if (CITPM_FailAttempt == ""){
+                        setpwa(true)
+                    }
+                    console.log(CITPM_PwdChangeDuration)
+                    if(CITPM_PwdChangeDuration==""){
+                        setpwdu(true)
+                    }
+                   
+                    setRequired(true)
+                    toast.warning('Fill all the Required fields...!',{
+                        autoClose: 2000 // Set auto close time to 2 seconds (2000 milliseconds)
+                      });
                 }else{
-        
-                    if(CITPM_PwdNeverExpiry==1){
-                        if(CITPM_PolicyName.length<=10 && isValid == false){
-                            const CITPM_CreatedBy=1;
-                        const FormData = {
-                                                    CITPM_PolicyName: CITPM_PolicyName,
-                                                    CITPM_SessionTimeOut:CITPM_SessionTimeOut,
-                                                    CITPM_FailAttempt:CITPM_FailAttempt,
-                                                    CITPM_PwdNeverExpiry:CITPM_PwdNeverExpiry,
-                                                    CITPM_PwdChangeDuration:CITPM_PwdChangeDuration,
-                                                    CITPM_PwdNotificationDuration:CITPM_PwdNotificationDuration,
-                                                    CITPM_Status:CITPM_Status,
-                                                    CITPM_CreatedBy:CITPM_CreatedBy,
-                                                    CITPM_CreatedDateTime:formattedDateTime
-                                                }
-                                                console.log(FormData)
-                                                e.preventDefault();
-                                try {
-                                const response = await axios.post('http://localhost:4000/CITPM', FormData); // Adjust URL as per your API endpoint
-                                console.log(response)
-                                setCITPM_PolicyName('')
-                                setCITPM_SessionTimeOut('')
-                                setCITPM_FailAttempt('')
-                                setCITPM_PwdNeverExpiry(0)
-                                setCITPM_PwdChangeDuration('')
-                                setCITPM_PwdNotificationDuration('')
-                                setSuccessMessage(true)
-                                } catch (error) {
-                                console.error('Error saving data:', error);
-                                }
-                        }else{
-                            setLimitPolicyName(true)
-                        }
-                        
-                    }else{
-                        if(CITPM_PwdChangeDuration=="" || CITPM_PwdNotificationDuration.length<1){
-                            console.log(CITPM_PolicyName,"_",CITPM_SessionTimeOut,"_",CITPM_FailAttempt,"_",CITPM_PwdNeverExpiry,"_",CITPM_PwdChangeDuration,"_",CITPM_PwdNotificationDuration)
-                            alert("Please fill all the required fields 2")
-                        }else{
-                            if(CITPM_PolicyName.length<=10 && isValid == false){
+                    if(CITPM_PolicyName.length<=100 && isValid == false){
+
+
+
+                       
+                        try {
+                            // Assuming CITPM_PolicyName is the policy name you want to check
+                            
+                            
+                            const response = await fetch(`http://localhost:4000/CITPM/PNAME/${encodeURIComponent(CITPM_PolicyName)}`);
+                            
+                            if (response.ok) {
+                              const jsonData = await response.json();
+                              console.log(jsonData.length); // Assuming jsonData is an array
+                              console.log(jsonData);
+                              if(jsonData.length>0){
+                                    //found
+                                    // setdupPolicy(true)
+                                    toast.warning('Policy Name already exist...!',{
+                                        autoClose: 2000 // Set auto close time to 2 seconds (2000 milliseconds)
+                                      });
+                              }else{
+                                //not found
                                 const CITPM_CreatedBy=1;
-                            const FormData = {
-                                                        CITPM_PolicyName: CITPM_PolicyName,
-                                                        CITPM_SessionTimeOut:CITPM_SessionTimeOut,
-                                                        CITPM_FailAttempt:CITPM_FailAttempt,
-                                                        CITPM_PwdNeverExpiry:CITPM_PwdNeverExpiry,
-                                                        CITPM_PwdChangeDuration:CITPM_PwdChangeDuration,
-                                                        CITPM_PwdNotificationDuration:CITPM_PwdNotificationDuration,
-                                                        CITPM_Status:CITPM_Status,
-                                                        CITPM_CreatedBy:CITPM_CreatedBy,
-                                                        CITPM_CreatedDateTime:formattedDateTime
-                                                    }
-                                                    console.log(FormData)
-                                                    e.preventDefault();
-                                    try {
-                                    const response = await axios.post('http://localhost:4000/CITPM', FormData); // Adjust URL as per your API endpoint
-                                    console.log(response)
-                                    setCITPM_PolicyName('')
-                                    setCITPM_SessionTimeOut('')
-                                    setCITPM_FailAttempt('')
-                                    setCITPM_PwdNeverExpiry(0)
-                                    setCITPM_PwdChangeDuration('')
-                                    setCITPM_PwdNotificationDuration('')
-                                    setSuccessMessage(true)
-                                    } catch (error) {
-                                    console.error('Error saving data:', error);
-                                    }
-                            }else{
-                                setLimitPolicyName(true)
+                                const FormData = {
+                                                            CITPM_PolicyName: CITPM_PolicyName,
+                                                            CITPM_SessionTimeOut:CITPM_SessionTimeOut,
+                                                            CITPM_FailAttempt:CITPM_FailAttempt,
+                                                            CITPM_PwdNeverExpiry:CITPM_PwdNeverExpiry,
+                                                            CITPM_PwdChangeDuration:CITPM_PwdChangeDuration,
+                                                            CITPM_PwdNotificationDuration:CITPM_PwdNotificationDuration,
+                                                            CITPM_Status:CITPM_Status,
+                                                            CITPM_CreatedBy:CITPM_CreatedBy,
+                                                            CITPM_CreatedDateTime:formattedDateTime
+                                                        }
+                                                        console.log(FormData)
+                                                        e.preventDefault();
+                                        try {
+                                        const response = await axios.post('http://localhost:4000/CITPM', FormData); // Adjust URL as per your API endpoint
+                                        console.log(response)
+                                        setCITPM_PolicyName('')
+                                        setCITPM_SessionTimeOut('')
+                                        setCITPM_FailAttempt('')
+                                        setCITPM_PwdNeverExpiry(0)
+                                        setCITPM_PwdChangeDuration('')
+                                        setCITPM_PwdNotificationDuration('')
+                                        setCITPM_Status(1)
+                                        // setSuccessMessage(true)
+                                        toast.success('Data Inserted Succesfully...!');
+                                        } catch (error) {
+                                        console.error('Error saving data:', error);
+                                        }
+                              }
+                            } else {
+                              console.error('Error fetching data:', response.statusText);
                             }
-                        }
+                          } catch (error) {
+                            console.error('Error fetching data:', error);
+                          }
+                    }else{
+                        setLimitPolicyName(true)
                     }
                 }
-        
+            }else{
+                if(CITPM_PolicyName=="" || CITPM_SessionTimeOut == "" || CITPM_FailAttempt == "" || CITPM_PwdChangeDuration=="" || CITPM_PwdNotificationDuration.length<1){
+                    console.log(CITPM_PolicyName,"_",CITPM_SessionTimeOut,"_",CITPM_FailAttempt,"_",CITPM_PwdNeverExpiry,"_",CITPM_PwdChangeDuration,"_",CITPM_PwdNotificationDuration)
+                                // alert("Please fill all the required fields")
+                                if(CITPM_PwdChangeDuration==""){
+                                    setpwdu(true)
+                                } if(CITPM_PwdNotificationDuration.length<1){
+                                    setpwno(true)
+                                }
+                                if(CITPM_PolicyName=="" ){
+                                    setpn(true)
+                                }
+                                if(CITPM_SessionTimeOut == ""){
+                                    setsto(true)
+                                }
+                                 if (CITPM_FailAttempt == ""){
+                                    setpwa(true)
+                                }
+                                console.log(CITPM_PwdChangeDuration)
+                                if(CITPM_PwdChangeDuration==""){
+                                    setpwdu(true)
+                                }
+                                setRequired(true)
+                                // setFillAll(true)
+                                setRequired(true)
+                                toast.warning('Fill all the Required fields...!',{
+                                    autoClose: 2000 // Set auto close time to 2 seconds (2000 milliseconds)
+                                  });
+                }else{
+                    if(CITPM_PolicyName.length<=100 && isValid == false){
+                       
+                        try {
+                            // Assuming CITPM_PolicyName is the policy name you want to check
+                            
+                            
+                            const response = await fetch(`http://localhost:4000/CITPM/PNAME/${encodeURIComponent(CITPM_PolicyName)}`);
+                            
+                            if (response.ok) {
+                              const jsonData = await response.json();
+                              console.log(jsonData.length); // Assuming jsonData is an array
+                              console.log(jsonData);
+                              if(jsonData.length>0){
+                                    //found
+                                    // setdupPolicy(true)
+                                    toast.warning('Policy Name already exist...!',{
+                                        autoClose: 2000 // Set auto close time to 2 seconds (2000 milliseconds)
+                                      });
+                              }else{
+                                //not found
+                                const CITPM_CreatedBy=1;
+                                const FormData = {
+                                                            CITPM_PolicyName: CITPM_PolicyName,
+                                                            CITPM_SessionTimeOut:CITPM_SessionTimeOut,
+                                                            CITPM_FailAttempt:CITPM_FailAttempt,
+                                                            CITPM_PwdNeverExpiry:CITPM_PwdNeverExpiry,
+                                                            CITPM_PwdChangeDuration:CITPM_PwdChangeDuration,
+                                                            CITPM_PwdNotificationDuration:CITPM_PwdNotificationDuration,
+                                                            CITPM_Status:CITPM_Status,
+                                                            CITPM_CreatedBy:CITPM_CreatedBy,
+                                                            CITPM_CreatedDateTime:formattedDateTime
+                                                        }
+                                                        console.log(FormData)
+                                                        e.preventDefault();
+                                        try {
+                                        const response = await axios.post('http://localhost:4000/CITPM', FormData); // Adjust URL as per your API endpoint
+                                        console.log(response)
+                                        setCITPM_PolicyName('')
+                                        setCITPM_SessionTimeOut('')
+                                        setCITPM_FailAttempt('')
+                                        setCITPM_PwdNeverExpiry(0)
+                                        setCITPM_PwdChangeDuration('')
+                                        setCITPM_PwdNotificationDuration('')
+                                        setCITPM_Status(1)
+                                        // setSuccessMessage(true)
+                                        toast.success('Data Inserted Succesfully...!');
+                                        } catch (error) {
+                                        console.error('Error saving data:', error);
+                                        }
+                              }
+                            } else {
+                              console.error('Error fetching data:', response.statusText);
+                            }
+                          } catch (error) {
+                            console.error('Error fetching data:', error);
+                          }
+                    }else{
+                        setLimitPolicyName(true)
+                    }
+                }
             }
         }
-
+    }
       const handleChangeCITPM_Status = (e) =>{
         const value = e.target.value;
         console.log(value)
         setCITPM_Status(value)
-       
       }
-
      const CancelClick = () => {
         setCITPM_PolicyName('')
         setCITPM_FailAttempt('')
@@ -153,130 +280,159 @@ const PolicyMaster = () =>{
         setCITPM_SessionTimeOut('')
         setCITPM_PwdNotificationDuration('')
         setCITPM_Status('1')
+        setRequired(false)
+        setisValid(false)
+        setAlertMessage1(false)
+        setAlertMessage2(false)
+        setAlertMessage4(false)
+        setAlertMessage3(false)
+        setpn(false)
+        setsto(false)
+        setpwa(false)
+        setpwdu(false)
+        setpwno(false)
      }
-    
 
     const handleChangeCITPM_PwdNotificationDuration = (e) => {
-        let inputValue = parseInt(e.target.value, 10);
-        setCITPM_PwdNotificationDuration(inputValue)
-        if(inputValue>=0 && inputValue<=999){
+        let { value } = e.target;
+        // Regular expression to match only digits
+        const numericRegex = /^[0-9]*$/;
+        
+        if (numericRegex.test(value)) {
+            setCITPM_PwdNotificationDuration(value);
+        } else {
+            // If the input contains any non-numeric characters, remove them from the value
+            value = value.replace(/\D/g, '');
+            setCITPM_PwdNotificationDuration(value);
+        }
+    
+        // Check if the value is empty
+        if (value === "") {
+            setpwno(true);
+        } else {
+            setpwno(false);
+        }
+        if(value==""){
             setAlertState4(false)
-        }else{
-            setAlertMessage4("Password Notification Duration Should between 1 to 999")
+        }else
+        if(value<0||value>999){
+            setAlertMessage4("Password Notification Duration Should be 1 to 999")
             setAlertState4(true)
-        }
-        // let inputValue = parseInt(e.target.value, 10);
-    
-        // // Check if the input value is within the range of 0 to 999
-        // if (isNaN(inputValue) || inputValue < 0) {
-        //     // If the input is less than 0 or NaN, set it to 0 and show an error message
-        //     inputValue = 0;
-        //     alert('Password Notification Duration must be a number between 0 and 999');
-        // } else if (inputValue > 999) {
-        //     // If the input is greater than 999, set it to 999 and show an error message
-        //     inputValue = 999;
-        //     alert('Password Notification Duration must be a number between 0 and 999');
-        // } else {
-        //     // If the input is within the range, update the state
-        //     setCITPM_PwdNotificationDuration(inputValue)
-        // }
-    }
-    
-    const handleCITPM_PwdChangeDuration = (e) => {
-        let inputValue = parseInt(e.target.value, 10);
-        setCITPM_PwdChangeDuration(inputValue)
-        if(inputValue>0 && inputValue<=999){
-            setAlertState3(false)
         }else{
-            setAlertMessage3("Password Change Duration Should between 1 to 999")
-            setAlertState3(true)
+            setAlertState4(false)
         }
-        // let inputValue = parseInt(e.target.value, 10);
-
-        // // Check if the input value is within the range of 1 to 999
-        // if (inputValue < 1 || isNaN(inputValue)) {
-        //     // If the input is less than 1 or NaN, set it to 1 and show an error message
-        //     inputValue = 1;
-        //     // setCITPM_SessionTimeOut(inputValue);
-        //     setAlertMessage('Password Change Duration Should be 1 to 999....!')
-        //     setAlertState(true)
-        // } else if (inputValue > 999) {
-        //     // If the input is greater than 999, set it to 999 and show an error message
-        //     inputValue = 999;
-        //     // setCITPM_SessionTimeOut(inputValue);
-        //     setAlertMessage('Password Change Duration Should be 1 to 999....!')
-        //     setAlertState(true)
-        // } else {
-        //     // If the input is within the range, update the state
-        //     setCITPM_PwdChangeDuration(inputValue);
-        //     setAlertState(false)
-        // }
+        if(CITPM_PwdChangeDuration!=""){
+            if(value>=CITPM_PwdChangeDuration){
+                setisGreater(true)
+            }else{
+                setisGreater(false)
+            }
+        }
+       
+    }
+    const handleCITPM_PwdChangeDuration = (e) => {
+        let { value } = e.target;
+        // Regular expression to match only digits
+        const numericRegex = /^[0-9]*$/;
+        
+        if (numericRegex.test(value)) {
+            setCITPM_PwdChangeDuration(value);
+        } else {
+            // If the input contains any non-numeric characters, remove them from the value
+            value = value.replace(/\D/g, '');
+            setCITPM_PwdChangeDuration(value);
+        }
+    
+        // Check if the value is empty
+        if (value === "") {
+            setpwdu(true);
+        } else {
+            setpwdu(false);
+        }
+        if(value==""){
+            setAlertState2(false)
+        }else
+        if(value==0||value>999){
+            setAlertMessage2("Password Change Duration Should be 0 to 999")
+            setAlertState2(true)
+        }else{
+            setAlertState2(false)
+        }
+        if(value==""){
+            setisGreater(false)
+        }else{
+            if(value>=CITPM_PwdNotificationDuration){
+                setisGreater(false)
+            }else{
+                setisGreater(true)
+            }
+        }
     }
     const handleChangePasswordattmept = (e) => {
-        let inputValue = parseInt(e.target.value, 10);
-        setCITPM_FailAttempt(inputValue)
-        if(inputValue>0 && inputValue<=999){
-            setAlertState2(false)
-        }else{
-            setAlertMessage2("Password Attempt Should between 1 to 999")
-            setAlertState2(true)
+        let { value } = e.target;
+        // Regular expression to match only digits
+        const numericRegex = /^[0-9]*$/;
+        
+        if (numericRegex.test(value)) {
+            setCITPM_FailAttempt(value);
+        } else {
+            // If the input contains any non-numeric characters, remove them from the value
+            value = value.replace(/\D/g, '');
+            setCITPM_FailAttempt(value);
         }
-        // let inputValue = parseInt(e.target.value, 10);
-
-        // // Check if the input value is within the range of 1 to 999
-        // if (inputValue < 1 || isNaN(inputValue)) {
-        //     // If the input is less than 1 or NaN, set it to 1 and show an error message
-        //     inputValue = 1;
-        //     // setCITPM_SessionTimeOut(inputValue);
-        //     setAlertMessage('Password Attempt Should be 1 to 999....!')
-        //     setAlertState(true)
-        // } else if (inputValue > 999) {
-        //     // If the input is greater than 999, set it to 999 and show an error message
-        //     inputValue = 999;
-        //     // setCITPM_SessionTimeOut(inputValue);
-        //     setAlertMessage('Password Attempt Should be 1 to 999....!')
-        //     setAlertState(true)
-        // } else {
-        //     // If the input is within the range, update the state
-        //     setCITPM_FailAttempt(inputValue);
-        //     setAlertState(false)
-        // }
+    
+        // Check if the value is empty
+        if (value === "") {
+            setpwa(true);
+        } else {
+            setpwa(false);
+        }
+        if(value==""){
+            setAlertState3(false)
+        }else
+        if(value==0||value>999){
+            setAlertMessage3("Password Attempt Should be 0 to 999")
+            setAlertState3(true)
+        }else{
+            setAlertState3(false)
+        }
     }
 
     const handleCITPM_SessionTimeOut = (e) => {
-        let inputValue = parseInt(e.target.value, 10);
-        setCITPM_SessionTimeOut(inputValue)
-        if(inputValue>0 && inputValue<=999){
-            setAlertState1(false)
-        }else{
-            setAlertMessage1("Session TimeOut Should between 1 to 999")
-            setAlertState1(true)
+        let { value } = e.target;
+        // Regular expression to match only digits
+        const numericRegex = /^[0-9]*$/;
+        
+        if (numericRegex.test(value)) {
+            setCITPM_SessionTimeOut(value);
+        } else {
+            // If the input contains any non-numeric characters, remove them from the value
+            value = value.replace(/\D/g, '');
+            setCITPM_SessionTimeOut(value);
         }
-        // Check if the input value is within the range of 1 to 999
-        // if (inputValue < 1 || isNaN(inputValue)) {
-        //     // If the input is less than 1 or NaN, set it to 1 and show an error message
-        //     inputValue = 1;
-        //     // setCITPM_SessionTimeOut(inputValue);
-        //     setAlertMessage('Session TimeOut Should be 1 to 999....!')
-        //     setAlertState(true)
-        // } else if (inputValue > 999) {
-        //     // If the input is greater than 999, set it to 999 and show an error message
-        //     inputValue = 999;
-        //     // setCITPM_SessionTimeOut(inputValue);
-        //     setAlertMessage('Session TimeOut Should be 1 to 999....!')
-        //     setAlertState(true)
-        // } else {
-        //     // If the input is within the range, update the state
-        //     setCITPM_SessionTimeOut(inputValue);
-        //     setAlertState(false)
-        // }
+    
+        // Check if the value is empty
+        if (value === "") {
+            setsto(true);
+        } else {
+            setsto(false);
+        }
+        if(value==""){
+            setAlertState1(false)
+        }else
+        if(value==0||value>999){
+            setAlertMessage1("Session TimeOut Should be 0 to 999")
+            setAlertState1(true)
+        }else{
+            setAlertState1(false)
+        }
     }
-
+    
     const handleCheckboxChange = (event) => {
         
         setCITPM_PwdNeverExpiry(event.target.checked ? 1 : 0);
-        setCITPM_PwdChangeDuration()
-        setCITPM_PwdNotificationDuration()
+        setCITPM_PwdChangeDuration('')
+        setCITPM_PwdNotificationDuration('')
       };
     
       const handlePolicyNameChange = (e) => {
@@ -302,10 +458,17 @@ const PolicyMaster = () =>{
                   }
                 
             }
-
+            if(e.target.value==""){
+                setpn(true)
+            }else{
+                setpn(false)
+            }
+            if(value==""){
+                setisValid(false)
+            }
       };
       function checkpolicy () {
-        if(CITPM_PolicyName.length>=10){
+        if(CITPM_PolicyName.length>=100){
             setLimitPolicyName(true)
         }else{
             setLimitPolicyName(false)
@@ -315,24 +478,29 @@ const PolicyMaster = () =>{
     return(
         <>
         <div align="center">
+        <ToastContainer />
         <h1 align="" >
            COMPANY IT POLICY MASTER
         </h1>
         <br></br>
         {SuccessMessage && (<h1>Data Inserted Successfully..!</h1>)}
-        {isValid ? <><p className="paragraph">Policy Name's First and Last character must be alphabet....!</p></> : <></>}
-            {AlertState1 ? <><p className="paragraph">{AlertMessage1}</p></> : <></>}
-            {AlertState2 ? <><p className="paragraph">{AlertMessage2}</p></> : <></>}
-            {AlertState3 ? <><p className="paragraph">{AlertMessage3}</p></> : <></>}
-            {AlertState4 ? <><p className="paragraph">{AlertMessage4}</p></> : <></>}
-            {AlertState5 ? <><p className="paragraph">{AlertMessage5}</p></> : <></>}
-            {LimitPolicyName ? <><p className="paragraph">Length of Policy Name should be 1 to 100</p></> : <></>}
+        {isValid ? <><p className="paragraph11">Policy Name's First and Last character must be alphabet....!</p></> : <></>}
+        {isGreater ? <><p className="paragraph11">Notification Duration Should be less than PWD Change Duration</p></> : <></>}
+
+            {AlertState1 ? <><p className="paragraph11">{AlertMessage1}</p></> : <></>}
+            {AlertState2 ? <><p className="paragraph11">{AlertMessage2}</p></> : <></>}
+            {AlertState3 ? <><p className="paragraph11">{AlertMessage3}</p></> : <></>}
+            {AlertState4 ? <><p className="paragraph11">{AlertMessage4}</p></> : <></>}
+            {AlertState5 ? <><p className="paragraph11">{AlertMessage5}</p></> : <></>}
+            {/* {dupPolicy ? <><p className="paragraph11">Policy Name Already Exist...!</p></> : <></>} */}
+            {FillAll ? <><p className="paragraph11">Please Fill All The Required Fields..!</p></>:<></>}
+            {LimitPolicyName ? <><p className="paragraph11">Length of Policy Name should be 1 to 100</p></> : <></>}
         <br></br>{/* first rowwwwwwww */}
         {/* <form> */}
 
             <tr>
-                <td><label>Policy Name</label></td>
-                <td className="td"><label>Session Time Out(Minutes)</label></td>
+                <td><label>Policy Name {pn ? <p className="paragraph">*</p> : <></>}  </label></td>
+                <td className="td"><label>Session Time Out(Minutes){sto ? <p className="paragraph2">*</p> : <></>}</label> </td>
             </tr>
 
             <tr>
@@ -346,16 +514,16 @@ const PolicyMaster = () =>{
                 />
                 </td>
                 <td className="td">
-                    <input type="number" value={CITPM_SessionTimeOut} onChange={handleCITPM_SessionTimeOut} required></input>
-                </td>
+                    <input type="text" value={CITPM_SessionTimeOut} onChange={handleCITPM_SessionTimeOut} required></input>
+                    </td>
             </tr>
  {/* first rowwwwwwww */}
 
 
   {/* second rowwwwwwww */}
             <tr>
-                <td><label>Password Attempts</label></td>
-                <td className="td"><label>Password Never Expire</label></td>
+                <td><label>Password Attempts{pwa ? <p className="paragraph">*</p> : <></>}</label></td>
+                <td className="td"><label>Password Never Expire </label></td>
             </tr>
             <tr>
                 <td>
@@ -366,7 +534,7 @@ const PolicyMaster = () =>{
                         required
                     />
                     {/* <input type="number" ></input> */}
-                </td>
+                    </td>
                 <td className="td">
                     <input type="checkbox"
                     checked={CITPM_PwdNeverExpiry}
@@ -376,15 +544,15 @@ const PolicyMaster = () =>{
             </tr> 
   {/* second rowwwwwwww */}
              {CITPM_PwdNeverExpiry ? <></> : <><tr>
-                    <td><label>Password Change Duration (Days)</label></td>
-                    <td className="td"><label>Password Expire Notification (Days)</label></td>
+                    <td><label>Password Change Duration (Days){pwdu ? <p className="paragraph1">*</p> : <></>}</label></td>
+                    <td className="td"><label>Password Expire Notification (Days){pwno ? <p className="paragraph4">*</p> : <></>}</label></td>
                 </tr>
                 <tr>
                     <td>
                         <input type="number"
                         value={CITPM_PwdChangeDuration}
                         onChange={handleCITPM_PwdChangeDuration} required></input>
-                    </td>      
+                    </td>     
                     <td className="td">
                         <input type="number"
                         value={CITPM_PwdNotificationDuration}

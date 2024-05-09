@@ -2,9 +2,13 @@ import { Link } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import back from './back.png';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const List = () => {
+  const [ID,setID]= useState('');
   const [data, setData] = useState(null);
+  const [delTask, setDelTask] = useState(false)
   const [refreshCount, setRefreshCount] = useState(0);
   const [filterColumn1, setFilterColumn1] = useState('');
   const [filterValue1, setFilterValue1] = useState('');
@@ -77,9 +81,19 @@ const List = () => {
     //     console.error('Error:', error);
     //   });
     // setRefreshCount(refreshCount + 1);
-    const confirmed = window.confirm("Are you sure you want to suspend this item?");
-  if (confirmed) {
-    axios.put(`http://localhost:4000/CITPM/${ID}`)
+  //   const confirmed = window.confirm("Are you sure you want to suspend this item?");
+  // if (confirmed) {
+  //   axios.put(`http://localhost:4000/CITPM/${ID}`)
+  //     .then(response => {
+  //       console.log(response.data);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error:', error);
+  //     });
+  //   setRefreshCount(refreshCount + 1);
+  // }
+  console.log(ID)
+  axios.put(`http://localhost:4000/CITPM/${ID}`)
       .then(response => {
         console.log(response.data);
       })
@@ -87,8 +101,35 @@ const List = () => {
         console.error('Error:', error);
       });
     setRefreshCount(refreshCount + 1);
-  }
+     
+    toast.success('Suspended', {
+      autoClose: 500, // Close after 1 second
+      onClose: () => {
+        // Navigate to other component here
+        window.location.reload();
+        // For demonstration, I'm just logging a message
+        console.log("Navigating to other component...");
+      }
+    });
+    setRefreshCount(refreshCount + 1);
   };
+
+
+  const handleConfirmationBox = (ID) => {
+    setID(ID)
+    if (!delTask) {
+      document.querySelector(".confirm-bg").style.display = "flex"
+      document.querySelector(".container").style.display = "flex"
+      setDelTask(true)
+    } else {
+      document.querySelector(".confirm-bg").style.display = "none"
+      document.querySelector(".container").style.display = "none"
+      setDelTask(false)
+    }
+    
+  }
+
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,7 +160,34 @@ const List = () => {
   });
 
   return (
+    
+    <>
+     <>
+        <div className="container">
+          <div className="confirmation-text">
+            Do you really want to Suspend this Policy......?
+          </div>
+          <div className="button-container">
+            <button 
+              className="cancel-button" 
+              onClick={() => handleConfirmationBox()}>
+                Cancel
+            </button>
+            <button 
+              className="confirmation-button"
+              onClick={() => handleSuspend(ID)}
+              >
+                Suspend
+              </button>
+          </div>
+        </div>
+        <div 
+          className="confirm-bg">
+          onClick={() => handleConfirmationBox()}
+        </div>
+      </>
     <div>
+      <ToastContainer></ToastContainer>
       <h1 align="center">LIST PAGE</h1>
       <Link to="/components/PolicyMaster"><button className="button-89">BACK</button></Link><br></br>
       <br></br>
@@ -205,17 +273,23 @@ const List = () => {
                 </td>
                 <td align="center">
                   {item.CITPM_Status === '1' || item.CITPM_Status === '2' ? (
-                    <button className="btnsuspend" onClick={() => handleSuspend(item.CITPM_PolicyID)}>Suspend</button>
+                    // <button className="btnsuspend" onClick={() => handleSuspend(item.CITPM_PolicyID)}>Suspend</button>
+                    
+                    <button className="btnsuspend" onClick={() => handleConfirmationBox(item.CITPM_PolicyID)}>Suspend</button>
+                    // <button className="delete-button"onClick={() => {handleConfirmationBox()}>Delete </button>
                   ) : item.CITPM_Status === '3' ? (
                     <>-</>
                   ) : null}
                 </td>
+               
               </tr>
             ))}
           </tbody>
         </table>
       )}
     </div>
+         
+    </>
   );
 };
 

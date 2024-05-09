@@ -17,13 +17,71 @@ input[type=number] {
   color: #ff0000; /* Text color */
   font-size: 16px; /* Font size */
   line-height: 1.5; /* Line height */
+  margin-left: 170px;
+  margin-top: -20px;
+  /* Add more styles as needed */
+}
+.paragraph1 {
+  color: #ff0000; /* Text color */
+  font-size: 16px; /* Font size */
+  line-height: 1.5; /* Line height */
+  margin-left: 260px;
+  margin-top: -20px;
+  /* Add more styles as needed */
+}
+.paragraph2 {
+  color: #ff0000; /* Text color */
+  font-size: 16px; /* Font size */
+  line-height: 1.5; /* Line height */
+  margin-left: 220px;
+  margin-top: -20px;
+  /* Add more styles as needed */
+}
+.paragraph4 {
+  color: #ff0000; /* Text color */
+  font-size: 16px; /* Font size */
+  line-height: 1.5; /* Line height */
+  margin-left: 280px;
+  margin-top: -20px;
+  /* Add more styles as needed */
+}
+.alert{
+  color: red;
+}
+.paragraph11 {
+  color: #ff0000; /* Text color */
+  font-size: 16px; /* Font size */
+  line-height: 1.5; /* Line height */
+  /* margin-left: 170px;
+  margin-top: -20px; */
   /* Add more styles as needed */
 }
 h1{
   color: green;
  
 }
-
+.paragrapheditpwat{
+  color: red;
+  margin-left: 160px;
+  margin-top: -20px;
+}
+.paragrapheditsession{
+  color: red;
+  margin-left: 140px;
+  margin-top: -20px;
+}
+.paragrapheditpwdcd{
+  color: red;
+  margin-left: 280px;
+  margin-right: 10px;
+  margin-top: -20px;
+}
+.paragrapheditpwden{
+  color: red;
+  margin-left: 290px;
+  margin-right: 10px;
+  margin-top: -20px;
+}
 .bcbtn{
   padding: 10px;
   margin-left: 50px;
@@ -48,12 +106,14 @@ table{
 
 .btnsuspend{
   background-color: rgb(209, 69, 69);
-  width: 90%;
-  
+   width: 90%;
+  /* font-size: larger;
+  font-size: 1000%;  */
 }
 body{
   align-items: center;
   margin-left: 50px;
+  /* color: #373B44; */
 }
 /* body{
   margin: 50px;
@@ -267,6 +327,7 @@ th{
 }
 
 .button-89 {
+  cursor: pointer;
   --b: 3px;   /* border thickness */
   --s: .45em; /* size of the corner */
   --color: #373B44;
@@ -299,4 +360,78 @@ th{
 .button-89:active {
   background: var(--color);
   color: #ff0101;
+}
+
+.container {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  background-color: #3d3737;
+  width: 351px;
+  top: 75%;
+  left: 50%;
+  transform: translate(-50%, -75%);
+  border-radius: 0.3rem;
+  padding: 1rem;
+  z-index: 5; /* Higher than the z-index of the background */
+  /* position: center; */
+  margin-top: -150px;
+}
+
+.confirmation-text {
+  display: flex;
+  color: white;
+  margin: 0.5rem 0 2rem;
+  text-align: center;
+  line-height: 2rem;
+  font-size: 1.1rem;
+}
+
+.button-container {
+  display: flex;
+  margin-top: auto;
+  justify-content: space-between;
+}
+
+.confirmation-button, delete-button {
+  display: inline-flex;
+  background-color: #cc0000;
+  color: white;
+  padding: 0.7rem 1.4rem;
+  border: black;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.cancel-button {
+  background-color: #000000;
+  color: white;
+  border-radius: 10px;
+  width: 100px;
+}
+
+.confirmation-button:hover {
+  background-color: rgb(255, 255, 255);
+  color: black;
+  cursor: pointer;
+}
+
+.cancel-button:hover {
+  background-color: #ffffff;
+  cursor: pointer;
+  color: black;
+}
+/* The CSS */
+.confirm-bg {
+  position: fixed;
+  display: none;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  opacity: 0.55;
+  overflow: hidden; /* disable scrolling*/
+  z-index: 2; /* higher than all other items, but lower than 
+    the confirm box*/
 }
