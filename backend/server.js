@@ -1,15 +1,90 @@
-
 const express = require('express');
 const mysql = require('mysql');
 const connection = require('./dbconn')
 const bodyParser = require('body-parser')
 const app = express();
-app.use(bodyParser.json()) // for parsing application/json
-app.use(bodyParser.urlencoded({ extended: true }))
+const fs = require('fs-js');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+// const cookieSession = require('cookie-session');
+const axios = require('axios')
 const port = 4000;
-var cors = require('cors')
+const cors = require('cors')
 app.use(express.json());
-app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  // allowedHeaders:true,
+  // preflightContinue:true,
+  // exposedHeaders:true,
+  optionsSuccessStatus: 200
+}))
+app.get('/setSession', (req, res) => {
+  req.session.startTime = new Date().getTime();
+  res.send('Session set');
+});
+
+// Route to check session
+app.get('/checkSession', (req, res) => {
+  if (req.session.startTime) {
+      const currentTime = new Date().getTime();
+      const elapsedTime = currentTime - req.session.startTime;
+      if (elapsedTime >= 10000) {
+          res.send('Session expired');
+      } else {
+          res.send('Session active');
+      }
+  } else {
+      res.send('Session not set');
+  }
+});
+
+app.use(cookieParser());
+
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false },
+  cookie:{
+    secure:false,
+    maxAge: 1000 * 10
+  }
+}))
+
+app.post('/login', (req, res) => {
+  const username  = req.body.username
+  // console.log(username)
+  if (username) {
+    req.session.username = username; 
+    console.log( "56",req.session.username)
+    res.send(req.session.username);
+  } else {
+    res.status(400).send("Username not provided");
+  }
+});
+
+
+// New endpoint to check session status
+app.get('/check-session', (req, res) => {
+  // if (req.session.username) {
+  //   res.send({ valid: true, username: req.session.username }); // Send username if session exists
+  // } else {
+  //   res.send({ valid: false }); // No active session
+  // }
+  // console.log("70",req.session.username)
+  // console.log(req.session.username)
+  if(req.session.username==undefined){
+    // console.log("undefined--")
+    res.send("undefined")
+  }else{
+    res.send(200)
+  }
+});
 
 app.post('/CITPM', (req, res) => {
   const { CITPM_PolicyName, CITPM_SessionTimeOut, CITPM_FailAttempt, CITPM_PwdNeverExpiry, CITPM_PwdChangeDuration, CITPM_PwdNotificationDuration, CITPM_Status, CITPM_CreatedBy, CITPM_CreatedDateTime } = req.body;
@@ -86,7 +161,7 @@ app.post('/api/log', (req, res) => {
 
 
 const logToFile = (logMessage, isError = false) => {
-  const logDir = '/home/it/api/Logs';
+  const logDir = 'D:\Logs';
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true }); // Create directory if it doesn't exist
   }

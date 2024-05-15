@@ -6,8 +6,10 @@ import {  useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
 
 const PolicyMaster = () =>{
+  const navigate = useNavigate();
     const [isGreater,setisGreater] = useState(false);
     const [dupPolicy,setdupPolicy] = useState(false);
     const[pn,setpn] = useState(false);
@@ -40,7 +42,32 @@ const PolicyMaster = () =>{
     const padZero = (num) => {
         return num < 10 ? '0' + num : num;
       };
+    //   const navigate = useNavigate();
+      const fetchData = async () => {
+        try {
+          // Send a GET request to check-session endpoint with credentials
+          const response = await axios.get('http://localhost:4000/check-session',{withCredentials:true});
+          const data = response.data;
+          console.log(data)
+          if (data=="OK") {
+            
+           
+          }else{
+            console.log("Session SET")// Set username if session exists
+            navigate('/');
 
+
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+     
+      
+      useEffect(() => {
+       fetchData()
+      }, [fetchData()]
+    )
       React.useEffect(() => {
         if (SuccessMessage || FillAll) {
           const timeoutId = setTimeout(() => {
@@ -74,7 +101,7 @@ const PolicyMaster = () =>{
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ module: "GroupMaster:", action, userCode: "", isError }),
+            body: JSON.stringify({ module: "Policy_Master:", action, userCode: "1", isError }),
           });
     
           if (!response.ok) {
@@ -86,6 +113,8 @@ const PolicyMaster = () =>{
       };
 
     const SaveClick = async(e) => {
+
+        logAction("Save Click Started")
 
         if(isValid||isGreater||AlertState1||AlertState2||AlertState3||AlertState4||AlertState5||LimitPolicyName){
 
@@ -161,6 +190,7 @@ const PolicyMaster = () =>{
                                         setCITPM_Status(1)
                                         // setSuccessMessage(true)
                                         toast.success('Data Inserted Succesfully...!');
+                                        logAction("Data Saved Sucsessfully")
                                         } catch (error) {
                                         console.error('Error saving data:', error);
                                         }
@@ -249,6 +279,7 @@ const PolicyMaster = () =>{
                                         setCITPM_PwdNotificationDuration('')
                                         setCITPM_Status(1)
                                         // setSuccessMessage(true)
+                                        logAction("Data saved Succesfully")
                                         toast.success('Data Inserted Succesfully...!');
                                         } catch (error) {
                                         console.error('Error saving data:', error);
@@ -266,6 +297,7 @@ const PolicyMaster = () =>{
                 }
             }
         }
+        logAction("Save Click Ended")
     }
       const handleChangeCITPM_Status = (e) =>{
         const value = e.target.value;

@@ -5,6 +5,7 @@ import Home  from './Home';
 import PolicyMaster from './components/PolicyMaster';
 import List from './components/List';
 import Edit from './components/Edit';
+import YourComponent from './YourComponent';
 //import Edit from './components/Edit';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
     
       <BrowserRouter>
       <Routes>
+        <Route path='YourComponent' element={<YourComponent/>}></Route>
         <Route path='/' element={<Home/>}></Route>
         <Route path='components/PolicyMaster' element={<PolicyMaster/>} ></Route>
         <Route path='/List' element={<List/>} ></Route>

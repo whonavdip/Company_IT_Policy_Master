@@ -31,6 +31,33 @@ const Edit = () => {
     const [CITPM_PwdChangeDuration, setCITPM_PwdChangeDuration] = useState('');
     const [CITPM_PwdNotificationDuration, setCITPM_PwdNotificationDuration] = useState('');
     const [CITPM_Status, setCITPM_Status] = useState('');
+
+
+    const fetchData = async () => {
+        try {
+          // Send a GET request to check-session endpoint with credentials
+          const response = await axios.get('http://localhost:4000/check-session',{withCredentials:true});
+          const data = response.data;
+          console.log(data)
+          if (data=="OK") {
+            
+           
+          }else{
+            console.log("Session SET")// Set username if session exists
+            navigate('/');
+
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+     
+      
+      useEffect(() => {
+       fetchData()
+      }, [fetchData()]
+    )
+    
     useEffect(() => {
         // Fetch data from localStorage or API and set the state
         setCITPM_PolicyID(localStorage.getItem('CITPM_PolicyID'))
@@ -380,8 +407,10 @@ const Edit = () => {
             setCITPM_PwdChangeDuration(localStorage.getItem('CITPM_PwdChangeDuration'))
             setCITPM_PwdNotificationDuration(localStorage.getItem('CITPM_PwdNotificationDuration'))
         }else{
-            setCITPM_PwdChangeDuration()
-            setCITPM_PwdNotificationDuration()
+            setCITPM_PwdChangeDuration('')
+            setCITPM_PwdNotificationDuration('')
+            setAlertState4(false)
+            setAlertState3(false)
         }
         
     };

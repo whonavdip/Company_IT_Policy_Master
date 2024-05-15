@@ -6,6 +6,31 @@ const Dropdown = ({ options, onSelect, disabledOptions }) => {
     onSelect(selectedOption);
   };
 
+  const fetchData = async () => {
+    try {
+      // Send a GET request to check-session endpoint with credentials
+      const response = await axios.get('http://localhost:4000/check-session',{withCredentials:true});
+      const data = response.data;
+      console.log(data)
+      if (data=="OK") {
+        
+       
+      }else{
+        console.log("Session SET")// Set username if session exists
+        navigate('/');
+
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+ 
+  
+  useEffect(() => {
+   fetchData()
+  }, [fetchData()]
+)
+
   return (
     <select onChange={handleChange}>
       <option value="">Select an option</option>

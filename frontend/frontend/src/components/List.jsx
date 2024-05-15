@@ -4,8 +4,12 @@ import axios from "axios";
 import back from './back.png';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
+
 
 const List = () => {
+  const navigate = useNavigate();
+
   const [ID,setID]= useState('');
   const [data, setData] = useState(null);
   const [delTask, setDelTask] = useState(false)
@@ -34,6 +38,30 @@ const List = () => {
   // Filter options based on the selected value in the other filter
   // const filteredOptions1 = options.filter(option => option !== filterColumn2);
   // const filteredOptions2 = options.filter(option => option !== filterColumn1);
+  const fetchData = async () => {
+    try {
+      // Send a GET request to check-session endpoint with credentials
+      const response = await axios.get('http://localhost:4000/check-session',{withCredentials:true});
+      const data = response.data;
+      console.log(data)
+      if (data=="OK") {
+        
+       
+      }else{
+        console.log("Session SET")// Set username if session exists
+        navigate('/');
+
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+ 
+  
+  useEffect(() => {
+   fetchData()
+  }, [fetchData()]
+)
 
   const handleFilterColumn1 = (event) => {
     const selectedColumn = event.target.value;
@@ -114,6 +142,7 @@ const List = () => {
     setRefreshCount(refreshCount + 1);
   };
 
+  
 
   const handleConfirmationBox = (ID) => {
     setID(ID)
